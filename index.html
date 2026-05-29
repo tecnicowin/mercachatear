@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MercadoChat - Compra seguro, chatea directo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Main Feed / Search View -->
+    <div id="home-view" class="app-view">
+        <header class="app-header">
+            <div class="header-top">
+                <div class="logo" onclick="window.switchMainView('home-view')" style="cursor: pointer;">MercadoChat</div>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="openLoginModal()" title="Vendedores" style="display: flex; align-items: center;">
+                        <i class="fa-solid fa-store"></i>
+                        <span id="header-seller-name" style="font-size: 0.7rem; margin-left: 5px; color: var(--text-secondary); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+                    </button>
+                    <button class="icon-btn" onclick="window.handleBuyerNavClick()" title="Compradores" style="display: flex; align-items: center;">
+                        <i class="fa-solid fa-user"></i>
+                        <span id="header-buyer-name" style="font-size: 0.7rem; margin-left: 5px; color: var(--text-secondary); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;"></span>
+                    </button>
+                    <button class="icon-btn" onclick="window.openSupportLogin()" title="Soporte"><i class="fa-solid fa-headset"></i></button>
+                </div>
+            </div>
+            <div class="search-section" style="margin-top: 15px;">
+                <div class="search-bar">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" id="main-search" placeholder="Buscar productos, servicios o tiendas...">
+                </div>
+            </div>
+            <div class="categories-section">
+                <div class="categories-wrapper" id="categories-container">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+            
+            <div class="main-tabs" style="margin: 15px 0 0 0; background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px; display: flex; border: 1px solid var(--border-color);">
+                <button class="tab-btn active" onclick="switchTab('products')" style="flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                    <i class="fa-solid fa-bag-shopping"></i> Productos
+                </button>
+                <button class="tab-btn" onclick="switchTab('stores')" style="flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                    <i class="fa-solid fa-store"></i> Tiendas
+                </button>
+                <button class="tab-btn" onclick="switchTab('services')" style="flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;">
+                    <i class="fa-solid fa-tools"></i> Servicios
+                </button>
+            </div>
+        </header>
+
+        <main class="app-main" style="padding-top: 20px;">
+            <div id="products-view">
+                <div class="section-header">
+                    <h2>Recomendados</h2>
+                    <a href="#" class="view-all">Ver todo</a>
+                </div>
+                <div class="products-grid" id="products-container">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <div id="stores-view" style="display: none;">
+                <div class="section-header">
+                    <h2>Tiendas Destacadas</h2>
+                </div>
+                <div class="products-grid" id="stores-container">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+
+            <div id="services-view" style="display: none;">
+                <div class="section-header">
+                    <h2>Servicios Profesionales</h2>
+                </div>
+                <div class="services-grid" id="services-container">
+                    <!-- Injected via JS -->
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Store View (Catálogo Público) -->
+    <div id="store-view" class="app-view" style="display: none;">
+        <div class="profile-cover">
+            <button class="back-btn" onclick="switchMainView('home-view')"><i class="fa-solid fa-arrow-left"></i></button>
+            <img src="https://images.unsplash.com/photo-1441986300917-64674bd600d8?auto=format&fit=crop&w=800&q=80">
+        </div>
+        <div class="profile-header-info">
+            <img src="" id="profile-avatar-img" class="profile-avatar-large">
+            <div class="profile-title-row">
+                <h2 id="profile-name">Cargando...</h2>
+                <i class="fa-solid fa-circle-check verified-badge-large"></i>
+            </div>
+            <p id="profile-category" class="profile-category">Categoría</p>
+            <p id="profile-description" class="profile-description">Cargando descripción...</p>
+            
+            <button class="btn-whatsapp btn-profile-contact" onclick="window.toggleCart()">
+                <i class="fa-solid fa-cart-shopping"></i> Ver Catálogo de Productos
+            </button>
+        </div>
+
+        <div class="profile-content">
+            <div class="section-header">
+                <h2>Catálogo de Productos</h2>
+            </div>
+            <div class="products-grid" id="store-products-grid">
+                <!-- Injected via JS -->
+            </div>
+        </div>
+
+        <button id="store-cart-btn" class="floating-cart-btn" onclick="window.toggleCart()" style="position: fixed; bottom: 85px; right: 20px; background: var(--primary-color); color: white; width: 60px; height: 60px; border-radius: 50%; border: none; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 15px rgba(0,0,0,0.4); z-index: 1000;">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span id="cart-badge" class="cart-badge" style="display: none;">0</span>
+        </button>
+    </div>
+
+    <!-- Dashboard View (Vendedor Logueado) -->
+    <div id="dashboard-view" class="app-view" style="display: none; padding-bottom: 80px;">
+        <div class="dash-header" style="padding: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                <div>
+                    <h1 id="dashboard-title" style="font-size: 1.5rem; margin-bottom: 5px;">Mi Negocio</h1>
+                    <span class="badge verified"><i class="fa-solid fa-circle-check"></i> Oficial</span>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="icon-btn" onclick="window.openEditStoreModal()" title="Configurar Ficha Pública"><i class="fa-solid fa-gear"></i></button>
+                    <button class="icon-btn" onclick="openShareModal()" title="Compartir Tienda"><i class="fa-solid fa-share-nodes"></i></button>
+                    <button class="icon-btn" onclick="window.logoutSeller()" style="color: #ef4444;" title="Cerrar Sesión"><i class="fa-solid fa-right-from-bracket"></i></button>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="stat-box">
+                    <span class="stat-value" id="stats-orders">0</span>
+                    <span class="stat-label">Ventas</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value">4.8</span>
+                    <span class="stat-label">Rating</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-value">1.2k</span>
+                    <span class="stat-label">Visitas</span>
+                </div>
+            </div>
+            <div class="segmented-control" style="margin-top: 20px;">
+                <label class="segment" style="flex: 1;">
+                    <input type="radio" name="dash-tab" value="inventory" checked onchange="window.switchDashTab('inventory')">
+                    <span><i class="fa-solid fa-boxes-stacked"></i> Inventario</span>
+                </label>
+                <label class="segment" style="flex: 1;">
+                    <input type="radio" name="dash-tab" value="orders" onchange="window.switchDashTab('orders')">
+                    <span><i class="fa-solid fa-receipt"></i> Pedidos</span>
+                </label>
+                <label class="segment" style="flex: 1;">
+                    <input type="radio" name="dash-tab" value="bank" onchange="window.switchDashTab('bank')">
+                    <span><i class="fa-solid fa-building-columns"></i> Mi Banco</span>
+                </label>
+            </div>
+        </div>
+
+        <div id="dash-inventory" class="dash-content" style="padding: 15px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-size: 1.1rem;">Mi Inventario</h3>
+                <div style="display: flex; gap: 8px;">
+                    <input type="file" id="excel-upload" accept=".xlsx, .csv" style="display: none;" onchange="procesarExcel()">
+                    <button class="btn-text-primary" onclick="document.getElementById('excel-upload').click()" style="padding: 6px 12px; font-size: 0.8rem; border: 1px solid var(--secondary-color); color: var(--secondary-color); background: transparent; border-radius: 8px;">
+                        <i class="fa-solid fa-file-excel"></i> Carga Masiva
+                    </button>
+                    <button class="btn-primary" onclick="window.openAddProduct()" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 8px;">
+                        <i class="fa-solid fa-plus"></i> Manual
+                    </button>
+                </div>
+            </div>
+            <div id="dashboard-inventory-container" class="products-grid">
+                <!-- Se inyectan productos -->
+            </div>
+        </div>
+
+        <div id="dash-orders" class="dash-content" style="padding: 15px; display: none;">
+            <h3 style="font-size: 1.1rem; margin-bottom: 15px;">Pedidos Recibidos</h3>
+            <div id="seller-orders-container" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Pedidos del vendedor -->
+            </div>
+        </div>
+
+        <div id="dash-bank" class="dash-content" style="padding: 15px; display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="font-size: 1.1rem;">Conciliación de Pagos</h3>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn-primary" onclick="window.generateBankPDF()" style="padding: 6px 12px; font-size: 0.8rem; background: var(--secondary-color); border: none; border-radius: 8px;">
+                        <i class="fa-solid fa-file-pdf"></i> PDF
+                    </button>
+                    <button class="btn-text-primary" onclick="window.clearBankHistory()" style="padding: 6px 12px; font-size: 0.8rem; color: #ef4444; border: 1px solid #ef4444; border-radius: 8px;">
+                        <i class="fa-solid fa-eraser"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+            <div id="bank-history-container" style="display: flex; flex-direction: column; gap: 12px;">
+                <!-- Historial de pagos -->
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Create Profile View (Registro de Vendedor) -->
+    <div id="create-profile-view" class="app-view" style="display: none; background: var(--bg-color);">
+        <div class="publish-header">
+            <button class="icon-btn" onclick="closeCreateProfile()"><i class="fa-solid fa-xmark"></i></button>
+            <h2>Crear Mi Tienda</h2>
+            <div style="width: 24px;"></div>
+        </div>
+
+        <div class="publish-content">
+            <div class="form-group">
+                <label>Nombre del Negocio</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="cp-name" class="form-input" placeholder="Ej. ElectroFast" style="flex: 1;">
+                    <button class="btn-ai-generate" onclick="generateAIName(event)"><i class="fa-solid fa-wand-magic-sparkles"></i> Sugerir</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Categoría</label>
+                <select id="cp-category" class="form-input">
+                    <!-- Injected via JS -->
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Teléfono WhatsApp</label>
+                <input type="tel" id="cp-phone" class="form-input" placeholder="Ej. 04141234567">
+            </div>
+
+            <div class="form-group">
+                <label>Descripción del Negocio</label>
+                <textarea id="cp-desc" class="form-input" placeholder="Ej. Los mejores equipos electrónicos con garantía oficial." style="height: 80px; resize: none;"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Logo de la Tienda</label>
+                <div id="logo-upload-box" onclick="document.getElementById('cp-logo').click()" 
+                    style="border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 20px; text-align: center; cursor: pointer; background: rgba(255,255,255,0.02);">
+                    <i class="fa-solid fa-camera" id="logo-icon" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 10px;"></i>
+                    <p id="logo-text" style="font-size: 0.8rem; color: var(--text-secondary);">Subir Logo</p>
+                    <img id="logo-img-preview" src="" style="display: none; width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto;">
+                </div>
+                <input type="file" id="cp-logo" accept="image/*" style="display: none;" onchange="previewLogo(event)">
+            </div>
+
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="cp-password" class="form-input" placeholder="Mínimo 6 caracteres">
+            </div>
+
+            <button class="btn-primary" onclick="submitProfile()" style="width: 100%; padding: 15px; margin-top: 20px;">Lanzar Mi Tienda</button>
+        </div>
+    </div>
+
+    <!-- Favoritos View -->
+    <div id="favorites-view" class="app-view" style="display: none; padding: 20px;">
+        <div class="section-header">
+            <h2>Mis Favoritos</h2>
+        </div>
+        <div class="products-grid" id="favorites-container">
+            <!-- Injected via JS -->
+        </div>
+    </div>
+
+    <!-- Perfil del Comprador (Mis Pedidos) -->
+    <div id="buyer-profile-view" class="app-view" style="display: none; padding: 20px;">
+        <div class="section-header">
+            <h2>Mis Pedidos</h2>
+            <button class="icon-btn" onclick="window.logoutBuyer()" style="color: #ef4444;"><i class="fa-solid fa-right-from-bracket"></i></button>
+        </div>
+        <div id="buyer-orders-container">
+            <!-- Injected via JS -->
+        </div>
+    </div>
+
+    <!-- Consola de Soporte / Admin -->
+    <div id="support-view" class="app-view" style="display: none; padding: 20px; background: #0a0f1e; padding-bottom: 100px;">
+        <header class="publish-header" style="background: transparent;">
+            <button class="icon-btn" onclick="switchMainView('home-view')"><i class="fa-solid fa-house"></i></button>
+            <h2 style="color: #60a5fa;">Consola Soporte</h2>
+            <div style="width: 24px;"></div>
+        </header>
+
+        <div class="support-tabs" style="display: flex; gap: 10px; margin: 20px 0;">
+            <button id="tab-disputes" class="tab-btn active" onclick="window.switchSupportTab('disputes')" style="flex: 1; padding: 10px; border-radius: 8px; background: rgba(96, 165, 250, 0.1); color: #60a5fa; border: 1px solid #60a5fa; cursor: pointer;">Disputas</button>
+            <button id="tab-users" class="tab-btn" onclick="window.switchSupportTab('users')" style="flex: 1; padding: 10px; border-radius: 8px; background: transparent; color: #94a3b8; border: 1px solid #334155; cursor: pointer;">Usuarios</button>
+            <button id="tab-admin" class="tab-btn" onclick="window.switchSupportTab('admin')" style="flex: 1; padding: 10px; border-radius: 8px; background: transparent; color: #94a3b8; border: 1px solid #334155; cursor: pointer;">Admin</button>
+        </div>
+
+        <div id="support-disputes-section">
+            <h3 style="color: #94a3b8; font-size: 1rem; margin-bottom: 15px;">Casos en Mediación</h3>
+            <div id="support-disputes-container" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Casos inyectados -->
+            </div>
+        </div>
+
+            <div id="support-users-container" style="display: flex; flex-direction: column; gap: 15px;">
+                <!-- Usuarios inyectados -->
+            </div>
+        </div>
+
+        <div id="support-admin-section" style="display: none;">
+            <h3 style="color: #94a3b8; font-size: 1rem; margin-bottom: 15px;">Gestión de Administradores</h3>
+            <div style="background: #111827; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px dashed #334155;">
+                <input type="text" id="new-admin-user" class="form-input" placeholder="Nombre de Usuario" style="margin-bottom: 10px;">
+                <input type="password" id="new-admin-pass" class="form-input" placeholder="Contraseña Agent" style="margin-bottom: 10px;">
+                <button class="btn-primary" onclick="window.addNewSupportAgent()" style="width: 100%; padding: 10px; font-size: 0.85rem;">Agregar Agente de Soporte</button>
+            </div>
+            <div id="support-agents-list" style="display: flex; flex-direction: column; gap: 10px;">
+                <!-- Lista de agentes -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Modales -->
+    <div id="cart-overlay" class="cart-overlay"></div>
+    <div id="cart-panel" class="cart-panel">
+        <div class="cart-header">
+            <h2>Mi Pedido</h2>
+            <button class="icon-btn" onclick="window.toggleCart()"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="cart-items" id="cart-items-container">
+            <!-- Injected via JS -->
+        </div>
+        <div class="cart-footer">
+            <div class="cart-total">
+                <span>Total Estimado:</span>
+                <strong id="cart-total-price">$0.00</strong>
+            </div>
+            <button id="checkout-btn" class="btn-whatsapp" onclick="window.openCheckoutForm()">
+                Continuar Pedido <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div id="login-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--surface-color); width: 100%; max-width: 350px; border-radius: var(--radius-lg); padding: 25px;">
+            <h3 style="margin-bottom: 20px;">Acceso Vendedor</h3>
+            <div class="form-group">
+                <input type="tel" id="login-phone" class="form-input" placeholder="Teléfono">
+            </div>
+            <div class="form-group">
+                <input type="password" id="login-password" class="form-input" placeholder="Contraseña">
+            </div>
+            <button class="btn-primary" onclick="processLogin()" style="width: 100%;">Entrar</button>
+            <button class="btn-text-primary" onclick="window.requestAccountRecovery('vendedor')" style="width: 100%; margin-top: 10px; color: #60a5fa; font-size: 0.8rem;">Olvidé mis datos / Recuperar cuenta</button>
+            <button class="btn-text-primary" onclick="closeLoginModal(); openCreateProfile();" style="width: 100%; margin-top: 5px;">Crear Mi Tienda</button>
+            <button class="btn-text-primary" onclick="closeLoginModal()" style="width: 100%; color: var(--text-secondary);">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="buyer-login-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--surface-color); width: 100%; max-width: 350px; border-radius: var(--radius-lg); padding: 25px;">
+            <h3 style="margin-bottom: 20px;">Acceso Comprador</h3>
+            <div class="form-group">
+                <input type="tel" id="buyer-login-phone" class="form-input" placeholder="Teléfono">
+            </div>
+            <div class="form-group">
+                <input type="password" id="buyer-login-password" class="form-input" placeholder="Contraseña">
+            </div>
+            <button class="btn-primary" onclick="processBuyerLogin()" style="width: 100%;">Ingresar</button>
+            <button class="btn-text-primary" onclick="window.requestAccountRecovery('comprador')" style="width: 100%; margin-top: 10px; color: #60a5fa; font-size: 0.8rem;">Olvidé mis datos / Recuperar cuenta</button>
+            <button class="btn-text-primary" onclick="window.openBuyerRegister()" style="width: 100%; margin-top: 5px;">Registrarme</button>
+            <button class="btn-text-primary" onclick="window.closeBuyerLogin()" style="width: 100%; color: var(--text-secondary);">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="support-login-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10005; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: #0a0f1e; width: 100%; max-width: 350px; border-radius: var(--radius-lg); padding: 30px; border: 1px solid #1e293b; box-shadow: 0 0 30px rgba(96, 165, 250, 0.2);">
+            <div style="text-align: center; margin-bottom: 25px;">
+                <i class="fa-solid fa-shield-halved" style="font-size: 3rem; color: #60a5fa; margin-bottom: 15px;"></i>
+                <h3 style="color: #f3f4f6;">Acceso Administrativo</h3>
+                <p style="font-size: 0.8rem; color: #94a3b8; margin-top: 5px;">Solo personal autorizado</p>
+            </div>
+            <div class="form-group">
+                <input type="text" id="support-user" class="form-input" placeholder="Usuario" style="background: #111827; border-color: #334155;">
+            </div>
+            <div class="form-group">
+                <input type="password" id="support-pass" class="form-input" placeholder="Clave de Seguridad" style="background: #111827; border-color: #334155;">
+            </div>
+            <button class="btn-primary" onclick="window.processSupportLogin()" style="width: 100%; background: #60a5fa; border: none; padding: 12px; font-weight: bold;">Ingresar a Consola</button>
+            <button class="btn-text-primary" onclick="getEl('support-login-modal').style.display='none'" style="width: 100%; margin-top: 15px; color: #64748b;">Volver al Inicio</button>
+        </div>
+    </div>
+
+    <div id="buyer-register-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--surface-color); width: 100%; max-width: 350px; border-radius: var(--radius-lg); padding: 25px;">
+            <h3 style="margin-bottom: 20px;">Crear Cuenta</h3>
+            <div class="form-group">
+                <input type="text" id="reg-buyer-name" class="form-input" placeholder="Nombre">
+            </div>
+            <div class="form-group">
+                <input type="tel" id="reg-buyer-phone" class="form-input" placeholder="WhatsApp">
+            </div>
+            <div class="form-group">
+                <input type="password" id="reg-buyer-password" class="form-input" placeholder="Contraseña">
+            </div>
+            <button class="btn-primary" onclick="window.processBuyerRegister()" style="width: 100%;">Crear Cuenta</button>
+            <button class="btn-text-primary" onclick="getEl('buyer-register-modal').style.display='none'" style="width: 100%; margin-top: 15px; color: var(--text-secondary);">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="checkout-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10001; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--surface-color); width: 100%; max-width: 400px; border-radius: var(--radius-lg); padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); max-height: 90vh; overflow-y: auto;">
+            <h3>Finalizar Pedido</h3>
+            <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 20px;">Confirma cómo deseas recibir tu compra</p>
+            
+            <div class="form-group">
+                <label>Método de Entrega</label>
+                <div class="segmented-control">
+                    <label class="segment" style="flex: 1;">
+                        <input type="radio" name="delivery-method" value="pickup" checked onchange="window.updateDeliveryUI()">
+                        <span>Retiro en Tienda</span>
+                    </label>
+                    <label class="segment" style="flex: 1;">
+                        <input type="radio" name="delivery-method" value="delivery" onchange="window.updateDeliveryUI()">
+                        <span>Envío (Delivery)</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="delivery-details" style="display: none;">
+                <div class="form-group">
+                    <label>Dirección de Entrega</label>
+                    <input type="text" id="checkout-address" class="form-input" placeholder="Av, Calle, Casa/Apto...">
+                </div>
+                <div style="background: rgba(16, 185, 129, 0.1); padding: 12px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--secondary-color);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9rem;">
+                        <span>Costo de Envío:</span>
+                        <strong id="delivery-cost-display">$2.50</strong>
+                    </div>
+                    <p style="font-size: 0.7rem; color: var(--text-secondary); margin-top: 4px;">* Calculado según tu ubicación actual</p>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Tus Datos</label>
+                <input type="text" id="checkout-name" class="form-input" placeholder="Tu Nombre" style="margin-bottom: 10px;">
+                <input type="tel" id="checkout-phone" class="form-input" placeholder="Tu WhatsApp">
+            </div>
+
+            <div style="background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                    <span style="font-size: 0.85rem;">Subtotal:</span>
+                    <span id="checkout-subtotal" style="font-weight: bold;">$0.00</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 1.1rem; color: var(--primary-color);">
+                    <span>Total a Pagar:</span>
+                    <strong id="checkout-final-total">$0.00</strong>
+                </div>
+            </div>
+
+            <button class="btn-whatsapp" onclick="window.processFinalCheckout()" style="width: 100%; padding: 15px; font-size: 1rem;">
+                Enviar a Vendedor <i class="fa-brands fa-whatsapp"></i>
+            </button>
+            <button class="btn-text-primary" onclick="window.closeCheckoutForm()" style="width: 100%; margin-top: 15px; color: var(--text-secondary); font-size: 0.9rem;">Volver al Carrito</button>
+        </div>
+    </div>
+
+
+
+    <div id="edit-product-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--bg-color); width: 100%; max-width: 400px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <div class="publish-header" style="padding: 15px 20px;">
+                <button class="icon-btn" onclick="document.getElementById('edit-product-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+                <h2 id="edit-product-modal-title">Añadir Producto</h2>
+                <div style="width: 24px;"></div>
+            </div>
+            <div style="padding: 20px;">
+                <input type="hidden" id="edit-product-index" value="-1">
+                <div class="form-group">
+                    <label>Descripción (Título)</label>
+                    <input type="text" id="edit-product-name" class="form-input" placeholder="Ej. Windows 10 Pro">
+                </div>
+                <div class="form-group">
+                    <label>Detalle (Marca/Modelo/Nota)</label>
+                    <input type="text" id="edit-product-detail" class="form-input" placeholder="Ej. Microsoft / OEM">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-group">
+                        <label>Precio (Bs)</label>
+                        <input type="number" id="edit-product-price-bs" class="form-input" placeholder="0.00">
+                    </div>
+                    <div class="form-group">
+                        <label>Precio ($)</label>
+                        <input type="number" id="edit-product-price-usd" class="form-input" placeholder="0.00">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Imagen del Producto</label>
+                    <div id="product-img-preview-box" onclick="document.getElementById('product-img-upload').click()" 
+                        style="border: 2px dashed var(--border-color); border-radius: 12px; height: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.02); overflow: hidden; margin-bottom: 10px;">
+                        <i class="fa-solid fa-camera" id="p-img-icon" style="font-size: 2rem; color: var(--text-secondary); margin-bottom: 8px;"></i>
+                        <span id="p-img-text" style="font-size: 0.8rem; color: var(--text-secondary);">Subir Foto o Galería</span>
+                        <img id="p-img-preview" src="" style="display: none; width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <input type="file" id="product-img-upload" accept="image/*" style="display: none;" onchange="previewProductImage(event)">
+                    <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                        <input type="text" id="edit-product-image" class="form-input" placeholder="O pega URL..." style="flex: 1;">
+                        <button class="btn-contact" onclick="generateAIProductImage()" style="background: linear-gradient(135deg, #8b5cf6, #ec4899); color: white; border: none; padding: 0 15px; border-radius: 8px;" title="Generar con IA"><i class="fa-solid fa-wand-magic-sparkles"></i> IA</button>
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="saveProductData()" style="width: 100%; padding: 12px; margin-top: 10px;">Guardar Cambios</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-store-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--bg-color); width: 100%; max-width: 400px; border-radius: var(--radius-lg); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <div class="publish-header" style="padding: 15px 20px;">
+                <button class="icon-btn" onclick="getEl('edit-store-modal').style.display='none'"><i class="fa-solid fa-xmark"></i></button>
+                <h2>Perfil de Tienda</h2>
+                <div style="width: 24px;"></div>
+            </div>
+            <div class="modal-body" style="padding: 20px;">
+                <div class="form-group">
+                    <label>Nombre Público</label>
+                    <input type="text" id="es-name" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="es-category" class="form-input"></select>
+                </div>
+                <div class="form-group">
+                    <label>Descripción Larga</label>
+                    <textarea id="es-desc" class="form-input" style="height: 80px; resize: none;"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Logo / Imagen</label>
+                    <div id="es-logo-box" onclick="document.getElementById('es-logo-upload').click()" 
+                        style="border: 2px dashed var(--border-color); border-radius: 12px; height: 100px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.02); overflow: hidden; margin-bottom: 10px;">
+                        <img id="es-logo-preview" src="" style="display: none; width: 80px; height: 80px; border-radius: 50%; object-fit: cover;">
+                        <span id="es-logo-text" style="color: var(--text-secondary); font-size: 0.8rem;">Click para subir Logo</span>
+                    </div>
+                    <input type="file" id="es-logo-upload" accept="image/*" style="display: none;" onchange="window.previewEditStoreLogo(event)">
+                </div>
+                <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+                <h4 style="margin-bottom: 15px; font-size: 0.9rem; color: var(--primary-color);">Métodos de Pago Aceptados</h4>
+                <div id="payment-methods-list" style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px;">
+                    <!-- Lista de métodos de pago -->
+                </div>
+                
+                <div style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 8px; border: 1px dashed var(--border-color);">
+                    <select id="new-payment-type" class="form-input" style="margin-bottom: 10px;" onchange="window.togglePaymentFields()">
+                        <option value="">+ Agregar forma de pago</option>
+                        <option value="pago_movil">Pago Móvil</option>
+                        <option value="binance">Binance Pay</option>
+                        <option value="airtm">Airtm</option>
+                        <option value="efectivo">Efectivo (Divisas)</option>
+                    </select>
+                    
+                    <div id="pago-movil-fields" style="display: none; flex-direction: column; gap: 10px;">
+                        <input type="text" id="pm-banco" class="form-input" placeholder="Nombre del Banco">
+                        <input type="text" id="pm-id" class="form-input" placeholder="Cédula o RIF">
+                        <input type="text" id="pm-phone" class="form-input" placeholder="Número de Teléfono">
+                    </div>
+                    
+                    <div id="binance-fields" style="display: none;">
+                        <input type="text" id="binance-id" class="form-input" placeholder="Binance ID">
+                    </div>
+                    
+                    <div id="airtm-fields" style="display: none;">
+                        <input type="email" id="airtm-email" class="form-input" placeholder="Correo de Airtm">
+                    </div>
+
+                    <button class="btn-primary" onclick="window.addPaymentMethod()" style="width: 100%; margin-top: 10px; padding: 8px; font-size: 0.8rem;">Vincular Método</button>
+                </div>
+                
+                <p style="font-size: 0.7rem; color: #ef4444; margin-top: 15px; line-height: 1.3;">
+                    <i class="fa-solid fa-triangle-exclamation"></i> <strong>Aviso Legal:</strong> Al agregar estos métodos, usted declara ser el titular de las cuentas. El uso de cuentas de terceros es motivo de suspensión inmediata.
+                </p>
+            </div>
+
+                <p style="font-size: 0.75rem; color: #ef4444; margin-top: 15px; line-height: 1.4; background: rgba(239, 68, 68, 0.05); padding: 12px; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2);">
+                    <i class="fa-solid fa-shield-halved"></i> <strong>REQUISITO DE SEGURIDAD:</strong> Es obligatorio configurar al menos un método de pago. El vendedor <strong>DEBE ser el titular</strong> de todas las cuentas vinculadas. El uso de cuentas de terceros está estrictamente prohibido y es motivo de suspensión definitiva del MercadoChat.
+                </p>
+            </div>
+
+            <button class="btn-primary" onclick="window.updateStoreProfile()" style="width: 100%; margin-top: 30px; padding: 15px;">Actualizar y Activar Tienda</button>
+        </div>
+    </div>
+
+    <div id="payment-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10002; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--surface-color); width: 100%; max-width: 420px; border-radius: var(--radius-lg); padding: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+            <h3 id="pm-title" style="margin-bottom: 20px; text-align: center;">Reportar Pago</h3>
+            
+            <div id="pm-summary" style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 15px; margin-bottom: 20px; border: 1px solid var(--border-color);">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-weight: bold; color: var(--primary-color);" id="pm-summary-id">Orden #---</span>
+                    <span style="font-weight: bold; color: var(--secondary-color);" id="pm-summary-total">$0.00</span>
+                </div>
+                <div id="pm-summary-details" style="font-size: 0.75rem; color: var(--text-secondary); max-height: 60px; overflow-y: auto; line-height: 1.4;"></div>
+            </div>
+
+            <div id="payment-options-container" style="margin-bottom: 20px;">
+                <!-- Payment methods will be injected here -->
+            </div>
+
+            <div id="report-payment-fields" style="display: none;">
+                <input type="hidden" id="pm-method-val">
+                <div style="background: var(--bg-color); padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid var(--secondary-color);">
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 5px;">Depositar en:</p>
+                    <div id="pm-selected-method-info" style="font-weight: bold; color: var(--text-primary);"></div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 15px;">
+                    <label>Referencia / ID Transacción</label>
+                    <input type="text" id="pm-ref" class="form-input" placeholder="Ej: 123456" style="background: var(--bg-color);">
+                </div>
+
+                <div class="form-group">
+                    <label>Capture de Pantalla (Comprobante)</label>
+                    <div onclick="document.getElementById('pm-upload').click()" style="border: 2px dashed var(--border-color); border-radius: 12px; height: 140px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: rgba(255,255,255,0.02); overflow: hidden; position: relative;">
+                        <img id="pm-preview" style="display: none; height: 100%; width: 100%; object-fit: contain;">
+                        <div id="pm-upload-ui" style="text-align: center; color: var(--text-secondary);">
+                            <i class="fa-solid fa-cloud-arrow-up" style="font-size: 2rem; margin-bottom: 8px;"></i><br>
+                            <span style="font-size: 0.8rem;">Subir Imagen</span>
+                        </div>
+                    </div>
+                    <input type="file" id="pm-upload" accept="image/*" style="display: none;" onchange="window.previewPaymentReceipt(event)">
+                </div>
+
+                <button class="btn-primary" onclick="window.submitPaymentReport()" style="width: 100%; padding: 14px; font-weight: bold; background: var(--secondary-color); color: #fff; border: none;">Enviar Reporte de Pago</button>
+                <button class="btn-text-primary" onclick="window.backToPaymentMethods()" style="width: 100%; margin-top: 10px; font-size: 0.8rem; color: var(--text-secondary);">Cambiar Método</button>
+            </div>
+
+            <button id="pm-cancel-btn" class="btn-text-primary" onclick="getEl('payment-modal').style.display='none'" style="width: 100%; margin-top: 20px; color: var(--text-secondary); cursor: pointer;">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="view-receipt-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10000; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--surface-color); width: 100%; max-width: 450px; border-radius: var(--radius-lg); padding: 25px;">
+            <h3>Verificación de Pago</h3>
+            <p id="vr-info" style="margin-bottom: 15px; font-size: 0.9rem;"></p>
+            <div style="width: 100%; height: 300px; background: #000; border-radius: 8px; margin-bottom: 20px; overflow: hidden;">
+                <img id="vr-img" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                <button class="btn-primary" style="background: var(--secondary-color); border: none;" onclick="window.verifyOrderPayment(true)">Verificar <i class="fa-solid fa-check"></i></button>
+                <button class="btn-primary" style="background: #ef4444; border: none;" onclick="window.verifyOrderPayment(false)">Rechazar <i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <button class="btn-text-primary" onclick="getEl('view-receipt-modal').style.display='none'" style="width: 100%; margin-top: 15px;">Cerrar</button>
+        </div>
+    </div>
+
+    <div id="mediation-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10002; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--surface-color); width: 100%; max-width: 400px; border-radius: var(--radius-lg); padding: 25px;">
+            <h3>Solicitar Mediación</h3>
+            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 20px;">Describe brevemente el problema para que Soporte intervenga como mediador.</p>
+            
+            <input type="hidden" id="mediation-order-id">
+            <div class="form-group">
+                <label>Motivo de la disputa</label>
+                <select id="mediation-reason" class="form-input" style="margin-bottom: 15px;">
+                    <option value="pago_no_reconocido">Pago no reconocido por vendedor</option>
+                    <option value="producto_no_recibido">No recibí el producto</option>
+                    <option value="producto_diferente">Producto diferente a lo acordado</option>
+                    <option value="comportamiento_abusivo">Comportamiento abusivo / Spam</option>
+                    <option value="otro">Otro motivo</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Detalles adicionales</label>
+                <textarea id="mediation-details" class="form-input" placeholder="Explica qué sucedió..." style="height: 100px; resize: none;"></textarea>
+            </div>
+
+            <p style="font-size: 0.7rem; color: var(--text-secondary); margin-bottom: 20px; line-height: 1.3;">
+                <i class="fa-solid fa-circle-info"></i> Soporte revisará el historial de la orden y podrá tomar medidas correctivas según las normas de la comunidad.
+            </p>
+
+            <button class="btn-primary" onclick="window.submitMediationRequest()" style="width: 100%; padding: 12px; background: #60a5fa; border: none;">Enviar a Soporte</button>
+            <button class="btn-text-primary" onclick="getEl('mediation-modal').style.display='none'" style="width: 100%; margin-top: 10px; color: var(--text-secondary);">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- Modal para que el Vendedor vea el detalle de la disputa -->
+    <div id="dispute-details-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 10003; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: #111827; width: 100%; max-width: 420px; border-radius: var(--radius-lg); padding: 30px; border: 1px solid #1f2937; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+            <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid #1f2937; padding-bottom: 15px;">
+                <div style="width: 50px; height: 50px; background: rgba(239, 68, 68, 0.2); color: #ef4444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                    <i class="fa-solid fa-scale-balanced"></i>
+                </div>
+                <div>
+                    <h3 style="margin: 0; color: #fff;">Detalle de Mediación</h3>
+                    <p style="margin: 0; font-size: 0.8rem; color: #94a3b8;">Intervención de Soporte solicitada</p>
+                </div>
+            </div>
+            
+            <div id="dispute-details-content">
+                <!-- Inyectado via JS -->
+            </div>
+
+            <button class="btn-primary" onclick="getEl('dispute-details-modal').style.display='none'" style="width: 100%; margin-top: 25px; background: #1f2937; color: #fff; border: 1px solid #374151;">Cerrar Detalle</button>
+        </div>
+    </div>
+
+    <div id="rating-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 10001; align-items: center; justify-content: center; padding: 20px;">
+        <div class="modal-content" style="background: var(--surface-color); width: 100%; max-width: 380px; border-radius: var(--radius-lg); padding: 30px; text-align: center;">
+            <div style="font-size: 3rem; color: #fbbf24; margin-bottom: 15px;"><i class="fa-solid fa-star"></i></div>
+            <h3 id="rm-title" style="margin-bottom: 10px;">Calificar Experiencia</h3>
+            <p id="rm-desc" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 25px;">Tu opinión ayuda a mantener la comunidad segura.</p>
+            
+            <input type="hidden" id="rating-order-id">
+            <input type="hidden" id="rating-role-to-rate">
+            <input type="hidden" id="current-star-value" value="0">
+            
+            <div id="star-rating-container" style="display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; font-size: 2.2rem; color: #334155;">
+                <i class="fa-solid fa-star star-input" data-value="1" onclick="window.setRatingValue(1)" style="cursor: pointer;"></i>
+                <i class="fa-solid fa-star star-input" data-value="2" onclick="window.setRatingValue(2)" style="cursor: pointer;"></i>
+                <i class="fa-solid fa-star star-input" data-value="3" onclick="window.setRatingValue(3)" style="cursor: pointer;"></i>
+                <i class="fa-solid fa-star star-input" data-value="4" onclick="window.setRatingValue(4)" style="cursor: pointer;"></i>
+                <i class="fa-solid fa-star star-input" data-value="5" onclick="window.setRatingValue(5)" style="cursor: pointer;"></i>
+            </div>
+            
+            <textarea id="rm-comment" class="form-input" placeholder="Opcional: Cuéntanos más..." style="height: 80px; resize: none; margin-bottom: 20px; border-radius: 12px;"></textarea>
+
+            <button class="btn-primary" onclick="window.submitUserRating()" style="width: 100%; background: #fbbf24; color: #000; border: none; font-weight: bold; padding: 14px;">Enviar Calificación</button>
+            <button class="btn-text-primary" onclick="getEl('rating-modal').style.display='none'" style="width: 100%; margin-top: 15px; color: var(--text-secondary);">Omitir</button>
+        </div>
+    </div>
+
+    <div id="toast-notification" style="position: fixed; top: -100px; left: 50%; transform: translateX(-50%); background: var(--surface-color); border-left: 4px solid var(--primary-color); border-radius: var(--radius-md); padding: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.3); z-index: 4000; display: flex; align-items: center; gap: 15px; width: 90%; max-width: 400px; transition: top 0.4s;">
+        <i class="fa-solid fa-bell" style="color: var(--primary-color);"></i>
+        <div style="flex: 1;">
+            <h4 id="toast-title" style="margin-bottom: 4px; font-size: 0.95rem;">Notificación</h4>
+            <p id="toast-desc" style="font-size: 0.8rem; color: var(--text-secondary);">Mensaje</p>
+        </div>
+    </div>
+
+    <!-- Menú Inferior -->
+    <nav id="bottom-nav" class="bottom-nav">
+        <!-- Injected via JS -->
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
